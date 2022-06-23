@@ -33,9 +33,12 @@ def upload_file():
             upload_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             print(upload_file)
             file.save(upload_file)
-            upload_json(upload_file)
-#            upload_json(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#            return redirect(url_for('download_file', name=filename))
+            res = upload_json(upload_file)
+            if res:
+                print('upload succeeded')
+                os.remove(upload_file)
+            else:
+                print('upload failed')
     return '''
     <!doctype html>
     <title>Upload new File</title>
