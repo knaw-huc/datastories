@@ -82,10 +82,10 @@ def drop_table(conn,table):
         cols = " text,".join(headers)
         cur.execute(f"DROP TABLE IF EXISTS {table};")
         conn.commit()
-        return True
+        return f'drop {table}: SUCCEED'
     except (Exception, psycopg2.DatabaseError) as error:
         stderr(f'drop_table: {error}')
-        return False
+        return f'drop {table} ERROR: {error}'
 
 
 def insert_content(conn,table,cols,rows):
@@ -118,21 +118,22 @@ def upload_json(inputfile):
     try:
         conn = get_db_connection(configfile)
         teller = get_last(conn)
-        table = f'result{teller}'
-        create_table(conn,table,vars)
-        res = insert_content(conn,table,vars,res['results']['bindings'])
+        table = f'result_{teller}'
+        res = create_table(conn,table,vars)
+        if res:
+            res = insert_content(conn,table,vars,res['results']['bindings'])
         if res:
             save_num(conn,teller + 1)
-            return True
+            return f'{teller}'
         else:
-            return False
+            return 'FAILED'
     except (Exception, psycopg2.DatabaseError) as error:
         stderr(error)
-        return False
+        return 'FAILED'
     finally:
         if conn is not None:
             conn.close()
-        return True
+        return 'CONNECTION CLOSED'
 
     
 def stderr(text,nl='\n'):
@@ -140,7 +141,7 @@ def stderr(text,nl='\n'):
 
 
 def arguments():
-    ap = argparse.ArgumentParser(description="Convert multi page pdf's into single jpeg files and split the pages into left and right (if the page width is larger than the height)")
+    ap = argparse.ArgumentParser(description="Insert json file into postgres db")
     ap.add_argument('-i', '--inputfile',
                     help="inputfile",
                     default= "result1.json")
@@ -178,37 +179,6 @@ if __name__ == '__main__':
         insert_content(conn,table,vars,res['results']['bindings'])
     except (Exception, psycopg2.DatabaseError) as error:
         stderr(error)
-    finally:
-        if conn is not None:
-            conn.close()
-
-
-    exit(1)
-
-    conn = None
-    try:
-        # read database configuration
-        params = config()
-        # connect to the PostgreSQL database
-        conn = psycopg2.connect(**params)
-        # create a new cursor
-        cur = conn.cursor()
-
-        with open('user_accounts.csv', 'r') as f:
-#            reader = csv.reader(f)
-#            next(reader) # Skip the header row.
-             create_table(cur, next(f))
-#             next(f) # Skip the header row.
-             cur.copy_from(f, 'users', sep=';')
-#            for row in reader:
-#                print(row)
-#                cur.execute(
-#                "INSERT INTO users VALUES (%s, %s, %s, %s)",
-#                row
-#            )
-        conn.commit()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
     finally:
         if conn is not None:
             conn.close()
