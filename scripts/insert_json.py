@@ -120,10 +120,8 @@ def upload_json(inputfile):
         teller = get_last(conn)
         table = f'result_{teller}'
         result = create_table(conn,table,vars)
-        stderr(f'result: {result} - {result.__class__}')
         if result:
             result = insert_content(conn,table,vars,res['results']['bindings'])
-        stderr(f'result: {result} - {result.__class__}')
         if result:
             save_num(conn,teller + 1)
             return f'{teller}'
@@ -135,7 +133,7 @@ def upload_json(inputfile):
     finally:
         if conn is not None:
             conn.close()
-        return 'CONNECTION CLOSED'
+        #return 'CONNECTION CLOSED'
 
     
 def stderr(text,nl='\n'):

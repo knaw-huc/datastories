@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, make_response
+from flask import Flask, Response, render_template, request, flash, redirect, url_for, make_response
 import sqlite3 as sql
 import os
 from werkzeug.utils import secure_filename
@@ -17,12 +17,17 @@ def allowed_file(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
+    result = ''
+    filename = ''
+    response = make_response(render_template('upload.html',result=result))
+    response.status = '200'
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
         file = request.files['file']
+        filename = file.filename
         # If the user does not select a file, the browser submits an
         # empty file without a filename.
         if file.filename == '':
@@ -36,21 +41,21 @@ def upload_file():
             res = upload_json(upload_file)
             if res=='FAILED':
                 print('upload failed')
+                result = f'Upload {filename} FAILED!'
+                response = make_response(render_template('upload.html',result=result))
+                response.status = '201'
             else:
-                make_response()
                 print('upload succeeded')
                 os.remove(upload_file)
-                #response = Response(status='201')
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-'''
-
+                result = f'Uploaded {filename} in result_{res}'
+                response = make_response(render_template('upload.html',result=result))
+                response.status = '201'
+        else:
+            print('upload failed')
+            result = f'Upload {filename} FAILED!'
+            response = make_response(render_template('upload.html',result=result))
+            response.status = '201'
+    return response
 
 if __name__ == "__main__":
     app.run()
