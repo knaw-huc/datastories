@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, make_response
 import sqlite3 as sql
 import os
 from werkzeug.utils import secure_filename
@@ -34,11 +34,13 @@ def upload_file():
             print(upload_file)
             file.save(upload_file)
             res = upload_json(upload_file)
-            if res:
+            if res=='FAILED':
+                print('upload failed')
+            else:
+                make_response()
                 print('upload succeeded')
                 os.remove(upload_file)
-            else:
-                print('upload failed')
+                #response = Response(status='201')
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -47,28 +49,10 @@ def upload_file():
       <input type=file name=file>
       <input type=submit value=Upload>
     </form>
-    '''
+'''
 
-
-@app.route("/bezoekers", methods=['GET', 'POST'])
-def bezoekers():
-  with sql.connect("sqlite.db") as con:
-    if request.method == 'POST':
-      voornaam = request.form['voornaam']
-      achternaam = request.form['achternaam']
-
-      cur = con.cursor()
-      sql_insert = "INSERT INTO bezoekers (voornaam, achternaam) VALUES (?,?)"
-      cur.execute(sql_insert, (voornaam, achternaam))
-      con.commit()
-
-    con.row_factory = sql.Row
-    cur = con.cursor()
-    cur.execute("select * from bezoekers")
-    rows = cur.fetchall()
-
-  return render_template("bezoekers.html", rows=rows)
 
 if __name__ == "__main__":
     app.run()
+
 

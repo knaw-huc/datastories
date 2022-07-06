@@ -119,16 +119,18 @@ def upload_json(inputfile):
         conn = get_db_connection(configfile)
         teller = get_last(conn)
         table = f'result_{teller}'
-        res = create_table(conn,table,vars)
-        if res:
-            res = insert_content(conn,table,vars,res['results']['bindings'])
-        if res:
+        result = create_table(conn,table,vars)
+        stderr(f'result: {result} - {result.__class__}')
+        if result:
+            result = insert_content(conn,table,vars,res['results']['bindings'])
+        stderr(f'result: {result} - {result.__class__}')
+        if result:
             save_num(conn,teller + 1)
             return f'{teller}'
         else:
             return 'FAILED'
     except (Exception, psycopg2.DatabaseError) as error:
-        stderr(error)
+        stderr(f'upload_json ERROR: {error}')
         return 'FAILED'
     finally:
         if conn is not None:
