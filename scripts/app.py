@@ -42,19 +42,18 @@ def upload_file():
             if res=='FAILED':
                 print('upload failed')
                 result = f'Upload {filename} FAILED!'
+                # reponse code ?
                 response = make_response(render_template('upload.html',result=result),201)
-                #response.status = '201'
             else:
                 print('upload succeeded')
                 os.remove(upload_file)
                 result = f'Uploaded {filename} in result_{res}'
                 response = make_response(render_template('upload.html',result=result),201)
-                #response.status = '201'
         else:
             print('upload failed')
             result = f'Upload {filename} FAILED!'
+            # reponse code ?
             response = make_response(render_template('upload.html',result=result),201)
-            #response.status = '201'
     return response
 
 if __name__ == "__main__":
