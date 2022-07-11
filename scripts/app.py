@@ -49,6 +49,7 @@ def upload_file():
                 os.remove(upload_file)
                 result = f'Uploaded {filename} in result_{res}'
                 response = make_response(render_template('upload.html',result=result),201)
+                response.headers['location'] = 'api/{res}'
         else:
             print('upload failed')
             result = f'Upload {filename} FAILED!'
